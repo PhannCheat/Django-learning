@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.utils import timezone
 
 
 class CustomUserManager(BaseUserManager):
@@ -30,7 +31,7 @@ class CustomUser(AbstractBaseUser):
     last_name = models.CharField(max_length=30)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
-    date_joined = models.DateTimeField(auto_now_add=True)
+    date_joined = models.DateTimeField(default=timezone.now)
 
     objects = CustomUserManager()
 
@@ -39,3 +40,13 @@ class CustomUser(AbstractBaseUser):
 
     def __str__(self):
         return self.email
+
+
+class Glossary(models.Model):
+    title = models.CharField(max_length=255)
+    subtitle = models.CharField(max_length=255)
+    detailKh = models.CharField(max_length=255, null=True, blank=True)
+    detailEng = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.title

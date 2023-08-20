@@ -1,10 +1,11 @@
-from .serializers import UserSerializer
-from django.contrib.auth import authenticate
-from rest_framework import status
+from rest_framework import status, generics
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth import authenticate
+from .models import Glossary
+from .serializers import UserSerializer, GlossarySerializer
 
 
 @api_view(['POST'])
@@ -26,12 +27,33 @@ def login(request):
     user = authenticate(username=username, password=password)
 
     if user is not None:
-        refresh = RefreshToken.for_user(user)
+        token, created = Token.objects.get_or_create(user=user)
         return Response({
-            'token': str(refresh.access_token),
+            'token': str(token.key),
             'user_id': user.id,
             'username': user.username,
             'email': user.email
         })
     else:
-        return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'detail': 'Authentication failed'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+@api_view(['POST'])
+def logout_view(request):
+    if request.auth:
+        # Invalidate and delete the token
+        request.auth.delete()
+
+    return Response({'detail': 'Logged out successfully'}, status=status.HTTP_200_OK)
+
+
+class GlossaryRetrieveUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Glossary.objects.all()
+    serializer_class = GlossarySerializer
+    permission_classes = [IsAuthenticated]
+
+
+class GlossaryListCreateView(generics.ListCreateAPIView):
+    queryset = Glossary.objects.all()
+    serializer_class = GlossarySerializer
+    permission_classes = [IsAuthenticated]

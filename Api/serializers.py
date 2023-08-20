@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
+from Api.models import Glossary
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,3 +13,8 @@ class UserSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(**validated_data)
         return user
 
+
+class GlossarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Glossary
+        fields = '__all__'
